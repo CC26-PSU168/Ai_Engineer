@@ -1,17 +1,10 @@
 """
-gemini_narrator.py — STEP 8: Generative AI dengan Gemini API
+
 
 Fungsi utama:
   GeminiNarrator.narrate()  → ubah dict insight → kalimat natural language
   GeminiNarrator.summarize() → rangkum laporan keuangan bulanan
 
-Install:
-  pip install google-generativeai
-
-Cara dapat API key:
-  1. Buka https://aistudio.google.com
-  2. Klik "Get API Key"
-  3. Isi di .env: GEMINI_API_KEY=your_key_here
 """
 
 import os
@@ -303,11 +296,34 @@ class GeminiNarrator:
 # ══════════════════════════════════════════════════════════════════
 
 def get_narrator(api_key: Optional[str] = None) -> GeminiNarrator:
-    """
-    Factory function — buat narrator dengan API key dari env atau parameter.
-
-    Cara pakai:
-        narrator = get_narrator()                       # dari .env
-        narrator = get_narrator("AIza...")             # manual
-    """
     return GeminiNarrator(api_key=api_key)
+
+
+if __name__ == "__main__":
+    # Isi API key di sini untuk test langsung
+    API_KEY = "AIzaSyCh5QU-aPrtRrMRsshfA4B5JuoUAXKB2V8"
+
+    narrator = GeminiNarrator(api_key=API_KEY)
+
+    print("\n=== TEST: narrate_insights ===")
+    print(narrator.narrate_insights({
+        "warnings" : ["Pengeluaran hiburan naik 25% dari bulan lalu"],
+        "positives": ["Savings rate 22% — sudah di atas target 20%"],
+        "insights" : ["Total 87 transaksi pengeluaran bulan ini"],
+    }))
+
+    print("\n=== TEST: narrate_score ===")
+    print(narrator.narrate_score(
+        score      = 74,
+        status     = "Cukup Stabil",
+        deductions = [{"rule": "Tabungan di bawah ideal (< 20%)", "points": -8}],
+    ))
+
+    print("\n=== TEST: narrate_forecast ===")
+    print(narrator.narrate_forecast({
+        "days_ahead"     : 7,
+        "total_predicted": 1_250_000,
+        "avg_per_day"    : 178_571,
+        "peak_day_name"  : "Saturday",
+        "peak_amount"    : 320_000,
+    }))
