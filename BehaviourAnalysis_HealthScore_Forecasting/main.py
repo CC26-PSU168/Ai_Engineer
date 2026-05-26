@@ -37,11 +37,11 @@ from gemininarator import get_narrator
 try:
     from lstm_model import load_model_and_preparer, predict_future
     LSTM_AVAILABLE = True
-except (ImportError, ModuleNotFoundError):
+except (ImportError, ModuleNotFoundError, MemoryError, Exception) as e:
     LSTM_AVAILABLE = False
     load_model_and_preparer = None  # type: ignore
     predict_future = None           # type: ignore
-    print("⚠️  TensorFlow not found — LSTM features disabled, using Prophet fallback.")
+    print(f"⚠️  TensorFlow/LSTM could not be loaded ({type(e).__name__}: {e}) — LSTM features disabled, using Prophet fallback.")
 
 # ══════════════════════════════════════════════════════════════════
 # SETUP APP
@@ -60,8 +60,12 @@ app.add_middleware(
     allow_headers = ["*"],
 )
 
+from sqlalchemy.pool import NullPool
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./finance.db")
-engine_db    = sqlalchemy.create_engine(DATABASE_URL)
+if DATABASE_URL.startswith("sqlite"):
+    engine_db = sqlalchemy.create_engine(DATABASE_URL)
+else:
+    engine_db = sqlalchemy.create_engine(DATABASE_URL, poolclass=NullPool)
 
 rule_engine        = RuleEngine()
 prophet_forecaster = ExpenseForecaster()
