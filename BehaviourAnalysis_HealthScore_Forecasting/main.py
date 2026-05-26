@@ -264,15 +264,19 @@ def forecast_prophet(
     days    : int = Query(7, ge=1, le=90),
     category: str = Query("all"),
 ):
-    df = get_user_df(user_id)
-    if not prophet_forecaster._trained:
-        prophet_forecaster.fit(df, verbose=False)
-    result = (
-        prophet_forecaster.predict_all_categories(days=days)
-        if category == "all"
-        else prophet_forecaster.predict(days=days, category=category)
-    )
-    return ok(result)
+    import traceback
+    try:
+        df = get_user_df(user_id)
+        if not prophet_forecaster._trained:
+            prophet_forecaster.fit(df, verbose=False)
+        result = (
+            prophet_forecaster.predict_all_categories(days=days)
+            if category == "all"
+            else prophet_forecaster.predict(days=days, category=category)
+        )
+        return ok(result)
+    except Exception as ex:
+        return {"status": "error", "message": str(ex), "traceback": traceback.format_exc()}
 
 
 @app.get("/forecast/lstm", tags=["Forecasting"])
